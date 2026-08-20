@@ -25,4 +25,11 @@ router.get('/about', (req: Request, res: Response) => {
   res.send('About units')
 })
 
+// Must stay below other GET routes, otherwise it swallows their paths (e.g. /about) as :unit
+router.get('/:unit', async (req: Request, res: Response) => {
+  const data = JSON.parse(fs.readFileSync(dataPath, 'utf-8'))
+  const unitData = data.find((e: any) => e.name === req.params.unit)
+  res.json(unitData || {})
+})
+
 export default router
