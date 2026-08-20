@@ -1,2 +1,3 @@
 # Ignore dir
 node_modules/
+.claude/
