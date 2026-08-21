@@ -1,12 +1,8 @@
 import express, { type Request, type Response, type NextFunction } from 'express'
-import fs from 'fs'
-import path from 'path'
-import { fileURLToPath } from 'url'
+
+import { getUnits, getSingle, createUnit } from './units-controller.ts'
 
 const router = express.Router({ mergeParams: true })
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
-const dataPath = path.join(__dirname, '../data/mech-data.json')
 
 // Unit Middleware
 const timeLog = (req: Request, res: Response, next: NextFunction) => {
@@ -16,10 +12,10 @@ const timeLog = (req: Request, res: Response, next: NextFunction) => {
 router.use(timeLog)
 
 router.get('/', async (req: Request, res: Response) => {
-  const data = JSON.parse(fs.readFileSync(dataPath, 'utf-8'))
+  const data = await getUnits(req, res)
   res.json(data)
-  // next(e) if we want an error handler
 })
+
 
 router.get('/about', (req: Request, res: Response) => {
   res.send('About units')
@@ -27,9 +23,13 @@ router.get('/about', (req: Request, res: Response) => {
 
 // Must stay below other GET routes, otherwise it swallows their paths (e.g. /about) as :unit
 router.get('/:unit', async (req: Request, res: Response) => {
-  const data = JSON.parse(fs.readFileSync(dataPath, 'utf-8'))
-  const unitData = data.find((e: any) => e.name === req.params.unit)
+  const unitData = getSingle(req, res)
   res.json(unitData || {})
+})
+
+router.post('/:unit', async (req: Request, res: Response) => {
+  const newUnit = createUnit(req.body)
+  res.status(201).json(newUnit)
 })
 
 export default router
